@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  db:
+    image: yobasystems/alpine-mariadb
+    volumes:
+      - "db-data:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: secret
+
+  wordpress:
+    depends_on:
+      - db
+    build: ./
+    volumes:
+      - "site-content:/var/www/wp-content"
+    ports:
+      - "8123:80"
+    environment:
+      DB_HOST: db
+      DB_PASSWORD: secret  # Change this to match the MYSQL_ROOT_PASSWORD in the db service
+      DB_NAME: wordpress
+      DB_USER: wp
+      WORDPRESS_SITE_URL: http://localhost:8123
+      FS_METHOD: direct
+      # For debugging only:
+      #WP_DEBUG: "true"
+      #WP_DEBUG_DISPLAY: "true"
+
+volumes:
+  db-data:
+  site-content:
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.91.0/24
